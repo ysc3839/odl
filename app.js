@@ -66,11 +66,19 @@ function wrap(fn) {
 }
 
 app.use(wrap(async function(req, res, next) {
-  const files = await provider.listChildren(req.path);
-  res.locals.url = req.url;
-  res.locals.path = req.path;
-  res.locals.files = files.value;
-  res.render('index');
+  if (req.path.slice(-1) === '/') {
+    const files = await provider.listChildren(req.path);
+    res.locals.url = req.url;
+    res.locals.path = req.path;
+    res.locals.files = files.value;
+    res.render('index');
+  } else {
+    const item = await provider.getItem(req.path);
+    const downloadUrl = item['@microsoft.graph.downloadUrl'];
+    if (downloadUrl) {
+      res.redirect(downloadUrl);
+    }
+  }
 }));
 
 module.exports = app;

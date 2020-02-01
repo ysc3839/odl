@@ -26,3 +26,9 @@ exports.listChildren = async function(path,
       .select(select).get();
   return res;
 };
+
+exports.getItem = async function(path) {
+  const res = await client.api(`/me/drive/root:${encodeURIComponent(path)}`)
+      .get();
+  return res;
+};
