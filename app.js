@@ -5,7 +5,7 @@ const provider = require('./providers/onedrive');
 
 const app = express();
 
-app.set('views', './themes/raw');
+app.set('views', './themes/nginx');
 app.set('view engine', 'ejs');
 
 app.use(function(req, res, next) {
@@ -69,7 +69,7 @@ app.use(wrap(async function(req, res, next) {
   const files = await provider.listChildren(req.path);
   res.locals.url = req.url;
   res.locals.path = req.path;
-  res.locals.files = JSON.stringify(files, null, 2);
+  res.locals.files = files.value;
   res.render('index');
 }));
 
