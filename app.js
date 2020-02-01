@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const normalize = require('normalize-path');
 
 const provider = require('./providers/onedrive');
 
@@ -46,7 +47,7 @@ app.use(function(req, res, next) {
     res.status(404).render('error');
     return;
   }
-  const normalizedPath = path.posix.normalize(req.path);
+  const normalizedPath = path.posix.normalize(normalize(req.path, false));
   if (normalizedPath !== req.path) {
     res.redirect(301, normalizedPath);
     return;
