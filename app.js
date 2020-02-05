@@ -7,6 +7,12 @@ const provider = require('./providers/onedrive');
 
 const app = express();
 
+if (process.env.NODE_ENV === 'production') {
+  app.disable('x-powered-by');
+} else {
+  require('./fetch-proxy');
+}
+
 app.set('views', './themes/nginx');
 app.set('view engine', 'ejs');
 
