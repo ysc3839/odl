@@ -3,7 +3,9 @@
   "version": "0.1.1",
   "description": "OneDrive Directory Lister",
   "main": "app.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node ."
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ysc3839/odl.git"
