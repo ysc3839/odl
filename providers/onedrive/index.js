@@ -1,5 +1,6 @@
 require('cross-fetch/polyfill');
-const {Client} = require('@microsoft/microsoft-graph-client');
+const {FileNotFoundError} = require('../errors');
+const {Client, GraphError} = require('@microsoft/microsoft-graph-client');
 const {RefreshTokenAuthProvider} = require('./authprovider');
 
 const config = require('../../config.json');
@@ -21,14 +22,31 @@ const client = Client.initWithMiddleware({
  */
 exports.listChildren = async function(path,
     select = ['lastModifiedDateTime', 'name', 'size', 'folder']) {
-  const encodedPath = path === '/' ? '' : ':' + encodeURIComponent(path) + ':';
-  const res = await client.api(`/me/drive/root${encodedPath}/children`)
-      .select(select).get();
-  return res;
+  try {
+    const encodedPath = (path === '/') ? '' :
+        ':' + encodeURIComponent(path) + ':';
+    const res = await client.api(`/me/drive/root${encodedPath}/children`)
+        .select(select).get();
+    return res;
+  } catch (e) {
+    if (e instanceof GraphError && e.code === 'itemNotFound') {
+      throw new FileNotFoundError(e);
+    } else {
+      throw e;
+    }
+  }
 };
 
 exports.getItem = async function(path) {
-  const res = await client.api(`/me/drive/root:${encodeURIComponent(path)}`)
-      .get();
-  return res;
+  try {
+    const res = await client.api(`/me/drive/root:${encodeURIComponent(path)}`)
+        .get();
+    return res;
+  } catch (e) {
+    if (e instanceof GraphError && e.code === 'itemNotFound') {
+      throw new FileNotFoundError(e);
+    } else {
+      throw e;
+    }
+  }
 };

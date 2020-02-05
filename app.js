@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const normalize = require('normalize-path');
 
+const {FileNotFoundError} = require('./providers/errors');
 const provider = require('./providers/onedrive');
 
 const app = express();
@@ -20,6 +21,23 @@ app.use(function(req, res, next) {
 });
 
 /**
+ * render error page
+ * @param {Express.Response} res
+ * @param {number} status
+ * @param {string} message
+ * @param {string=} title
+ */
+function renderErrorPage(res, status, message, title) {
+  if (!title) {
+    title = message;
+  }
+  if (!res.headersSent) {
+    res.status(status);
+  }
+  res.render('error', {title: title, message: message, server: 'odl'});
+}
+
+/**
  * check if str has any invalid character
  * @param {string} str
  * @return {boolean}
@@ -36,16 +54,10 @@ function hasInvalidChar(str) {
 
 app.use(function(req, res, next) {
   if (req.method !== 'GET') {
-    res.locals.status = '405 Method Not Allowed';
-    res.locals.server = 'odl';
-    res.status(405).render('error');
-    return;
+    return renderErrorPage(res, 405, '405 Method Not Allowed');
   }
   if (hasInvalidChar(req.path)) {
-    res.locals.status = '404 Not Found';
-    res.locals.server = 'odl';
-    res.status(404).render('error');
-    return;
+    return renderErrorPage(res, 404, '404 Not Found');
   }
   const normalizedPath = path.posix.normalize(normalize(req.path, false));
   if (normalizedPath !== req.path) {
@@ -67,17 +79,25 @@ function wrap(fn) {
 }
 
 app.use(wrap(async function(req, res, next) {
-  if (req.path.slice(-1) === '/') {
-    const files = await provider.listChildren(req.path);
-    res.locals.url = req.url;
-    res.locals.path = req.path;
-    res.locals.files = files.value;
-    res.render('index');
-  } else {
-    const item = await provider.getItem(req.path);
-    const downloadUrl = item['@microsoft.graph.downloadUrl'];
-    if (downloadUrl) {
-      res.redirect(downloadUrl);
+  try {
+    if (req.path.slice(-1) === '/') {
+      const files = await provider.listChildren(req.path);
+      res.locals.url = req.url;
+      res.locals.path = req.path;
+      res.locals.files = files.value;
+      res.render('index');
+    } else {
+      const item = await provider.getItem(req.path);
+      const downloadUrl = item['@microsoft.graph.downloadUrl'];
+      if (downloadUrl) {
+        res.redirect(downloadUrl);
+      }
+    }
+  } catch (e) {
+    if (e instanceof FileNotFoundError) {
+      return renderErrorPage(res, 404, '404 Not Found');
+    } else {
+      throw e;
     }
   }
 }));
