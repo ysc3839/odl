@@ -3,7 +3,7 @@ const {FileNotFoundError} = require('../errors');
 const {Client, GraphError} = require('@microsoft/microsoft-graph-client');
 const {RefreshTokenAuthProvider} = require('./authprovider');
 
-const config = require('../../config.json');
+const config = require('../../config').providerConf;
 
 const client = Client.initWithMiddleware({
   authProvider: new RefreshTokenAuthProvider(

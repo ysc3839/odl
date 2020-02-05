@@ -2,8 +2,9 @@ const express = require('express');
 const path = require('path');
 const normalize = require('normalize-path');
 
+const config = require('./config');
 const {FileNotFoundError} = require('./providers/errors');
-const provider = require('./providers/onedrive');
+const provider = require('./providers/' + config.provider);
 
 const app = express();
 
@@ -13,7 +14,7 @@ if (process.env.NODE_ENV === 'production') {
   require('./fetch-proxy');
 }
 
-app.set('views', './themes/nginx');
+app.set('views', './themes/' + config.theme);
 app.set('view engine', 'ejs');
 
 // special pages, url starts with '/:'

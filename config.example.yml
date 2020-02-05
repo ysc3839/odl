@@ -1,0 +1,9 @@
+onedriveConf: &onedriveConf
+  clientId: ''
+#  clientSecret: '' # This is optional for public clients
+  refreshToken: ''
+
+provider: onedrive
+providerConf: *onedriveConf
+
+theme: nginx
