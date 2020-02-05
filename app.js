@@ -16,11 +16,12 @@ if (process.env.NODE_ENV === 'production') {
 app.set('views', './themes/nginx');
 app.set('view engine', 'ejs');
 
+// special pages, url starts with '/:'
 app.use(function(req, res, next) {
   const prefix = '/:';
   if (req.url.slice(0, prefix.length) === prefix) {
     req.url = '/' + req.url.slice(prefix.length);
-    res.json('special:' + req.url);
+    res.status(404).end();
   } else {
     next();
   }
