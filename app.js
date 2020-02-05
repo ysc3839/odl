@@ -89,7 +89,7 @@ function wrap(fn) {
 app.use(wrap(async function(req, res, next) {
   try {
     if (req.path.slice(-1) === '/') {
-      const files = await provider.listChildren(req.path);
+      const files = await provider.listChildren(req.path.slice(0, -1));
       res.locals.url = req.url;
       res.locals.path = req.path;
       res.locals.files = files.value;

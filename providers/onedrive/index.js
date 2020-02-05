@@ -17,12 +17,14 @@ const client = Client.initWithMiddleware({
 
 /**
  * list children of a path
- * @param {string} path normalized and not URI encoded path
+ * @param {string} path normalized, trailing slashes stripped
+ *   and not URI encoded path
  * @param {string[]} select
  */
 exports.listChildren = async function(path,
     select = ['lastModifiedDateTime', 'name', 'size', 'folder']) {
   try {
+    if (!path) path = '/';
     const encodedPath = (path === '/') ? '' :
         ':' + encodeURIComponent(path) + ':';
     const res = await client.api(`/me/drive/root${encodedPath}/children`)
