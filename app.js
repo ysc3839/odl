@@ -110,3 +110,10 @@ app.use(wrap(async function(req, res, next) {
 }));
 
 module.exports = app;
+
+if (!module.parent) {
+  const port = parseInt(process.env.PORT || 3000, 10);
+  app.listen(port, function() {
+    console.log(`odl started on port ${port}`);
+  });
+}
