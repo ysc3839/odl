@@ -1,7 +1,8 @@
 onedriveConf: &onedriveConf
-  clientId: ''
+  clientId: 
 #  clientSecret: '' # This is optional for public clients
   refreshToken: ''
+  redirectUri: 
 
 provider: onedrive
 providerConf: *onedriveConf
