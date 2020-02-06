@@ -7,3 +7,13 @@ exports.FileNotFoundError = class FileNotFoundError extends Error {
     }
   }
 };
+
+exports.NotDirError = class NotDirError extends Error {
+  constructor(...args) {
+    super(...args);
+    this.name = 'NotDirError';
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, NotDirError);
+    }
+  }
+};

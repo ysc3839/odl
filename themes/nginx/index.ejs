@@ -6,10 +6,9 @@
   const NAME_LEN = 50;
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   files.forEach(function(f) {
-    const isDir = !!f.folder,
-      name = f.name + (isDir ? '/' : ''),
+    const name = f.name + (f.isDir ? '/' : ''),
       truncatedName = name.length > NAME_LEN ? name.slice(0, NAME_LEN - 3) + '..>' : name;
-    const D = new Date(f.lastModifiedDateTime),
+    const D = new Date(f.lastModified),
       d = D.getDate().toString().padStart(2, '0'),
       b = months[D.getMonth()],
       Y = D.getFullYear(),
@@ -17,6 +16,6 @@
       M = D.getMinutes().toString().padStart(2, '0'),
       dateStr = `${d}-${b}-${Y} ${H}:${M}`;
     const sizeStr = f.size.toString().padStart(19);
-%><a href="<%- encodeURIComponent(f.name) + (isDir ? '/' : '') %>"><%= truncatedName %></a><%- ' '.repeat(NAME_LEN - truncatedName.length) %> <%= dateStr %> <%= sizeStr %>
+%><a href="<%- encodeURIComponent(f.name) + (f.isDir ? '/' : '') %>"><%= truncatedName %></a><%- ' '.repeat(NAME_LEN - truncatedName.length) %> <%= dateStr %> <%= sizeStr %>
 <% }); %></pre><hr></body>
 </html>

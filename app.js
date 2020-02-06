@@ -1,9 +1,10 @@
 const express = require('express');
-const path = require('path');
+const posixPath = require('path').posix;
 const normalize = require('normalize-path');
+const encodeUriKeepSlash = require('./encodeuri-keepslash');
 
 const config = require('./config');
-const {FileNotFoundError} = require('./providers/errors');
+const {FileNotFoundError, NotDirError} = require('./providers/errors');
 const provider = require('./providers/' + config.provider);
 
 const app = express();
@@ -64,13 +65,23 @@ app.use(function(req, res, next) {
   if (req.method !== 'GET') {
     return renderErrorPage(res, 405, '405 Method Not Allowed');
   }
-  if (hasInvalidChar(req.path)) {
-    return renderErrorPage(res, 404, '404 Not Found');
-  }
-  const normalizedPath = path.posix.normalize(normalize(req.path, false));
-  if (normalizedPath !== req.path) {
-    res.redirect(301, normalizedPath);
-    return;
+  try {
+    const path = decodeURIComponent(req.path);
+    if (hasInvalidChar(path)) {
+      return renderErrorPage(res, 404, '404 Not Found');
+    }
+    const normalizedPath = encodeUriKeepSlash(
+        posixPath.normalize(normalize(path, false)));
+    if (normalizedPath !== req.path) {
+      res.redirect(301, normalizedPath);
+      return;
+    }
+  } catch (e) {
+    if (e instanceof URIError) {
+      return renderErrorPage(res, 400, '400 Bad Request');
+    } else {
+      throw e;
+    }
   }
   next();
 });
@@ -88,21 +99,26 @@ function wrap(fn) {
 
 app.use(wrap(async function(req, res, next) {
   try {
-    if (req.path.slice(-1) === '/') {
-      const files = await provider.listChildren(req.path.slice(0, -1));
-      res.locals.url = req.url;
-      res.locals.path = req.path;
-      res.locals.files = files.value;
+    const path = decodeURIComponent(req.path);
+    if (path.slice(-1) === '/') {
+      const files = await provider.listChildren(path.slice(0, -1));
+      res.locals.path = path;
+      res.locals.files = files;
       res.render('index');
     } else {
-      const item = await provider.getItem(req.path);
-      const downloadUrl = item['@microsoft.graph.downloadUrl'];
-      if (downloadUrl) {
-        res.redirect(downloadUrl);
+      const file = await provider.getItem(path);
+      if (file.isDir) {
+        res.redirect(req.path + '/');
+        return;
+      }
+      if (file.downloadUrl) {
+        res.redirect(file.downloadUrl);
+      } else {
+        throw new FileNotFoundError(path);
       }
     }
   } catch (e) {
-    if (e instanceof FileNotFoundError) {
+    if (e instanceof FileNotFoundError || e instanceof NotDirError) {
       return renderErrorPage(res, 404, '404 Not Found');
     } else {
       throw e;

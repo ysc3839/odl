@@ -23,6 +23,7 @@
     "express": "^4.17.1",
     "https-proxy-agent": "^4.0.0",
     "js-yaml": "^3.13.1",
+    "lru-cache": "^5.1.1",
     "normalize-path": "^3.0.0"
   },
   "devDependencies": {

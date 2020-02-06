@@ -3,6 +3,8 @@ onedriveConf: &onedriveConf
 #  clientSecret: '' # This is optional for public clients
   refreshToken: ''
   redirectUri: 
+  cache: # https://www.npmjs.com/package/lru-cache#options
+    maxAge: 600000 # 10 minutes, in ms
 
 provider: onedrive
 providerConf: *onedriveConf
